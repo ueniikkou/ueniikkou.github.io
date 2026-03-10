@@ -276,7 +276,7 @@
         await addMessageOnline({ major, studentId, content, avatarDataUrl });
       } catch (e) {
         console.error(e);
-        alert("提交失败：请检查网络或 LeanCloud 配置（appId/appKey/serverURL），然后重试。");
+        alert("提交失败：请检查网络或 Bmob 配置（Application ID / REST API Key），或者稍后重试。");
         return;
       } finally {
         submitBtn.disabled = false;
