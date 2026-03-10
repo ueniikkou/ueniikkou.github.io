@@ -27,15 +27,25 @@
         
         <div style="text-align: center;">
             <a href="messages.html" class="btn">查看所有留言</a>
-            <a href="submit.html" class="btn">如何投稿</a>
+           <a href="submit.html" class="btn btn-secondary">如何投稿</a>
+          </div>
+
+        <h2 class="section-title">最新留言预览</h2>
+        <div id="latest" class="cards">
+            <div class="empty-state">
+                <div class="empty-title">还没有留言</div>
+                <div class="empty-sub">去“如何投稿”写下你的第一条毕业寄语吧。</div>
+            </div>
         </div>
-        
-        <h2 style="margin-top: 60px;">最新留言预览</h2>
-        <p>（这里以后放3-5条最新留言）</p>
         
         <footer style="margin-top: 80px; text-align: center; color: #777; font-size: 0.9em;">
             © 2026 你的学校/专业 | Powered by GitHub Pages
         </footer>
-    </div>
+ </div>
+
+    <script src="app.js"></script>
+    <script>
+        window.App?.renderLatest?.({ mountId: "latest", limit: 5 });
+    </script>
 </body>
 </html>
