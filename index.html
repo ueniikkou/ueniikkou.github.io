@@ -13,18 +13,22 @@
         .intro { font-size: 1.2em; text-align: center; margin: 30px 0; }
         .btn { display: inline-block; background: #3498db; color: white; padding: 12px 24px; border-radius: 6px; text-decoration: none; margin: 10px; }
         .btn:hover { background: #2980b9; }
+        body {
+    background: url('images/封面.jpg') no-repeat center center fixed;
+    background-size: cover;
+    background-attachment: fixed;
+}
+.container {
+    background: rgba(255, 255, 255, 0.92);  /* 半透明白底，让文字清晰 */
+    backdrop-filter: blur(5px);  /* 毛玻璃效果，现代感 */
+}
     </style>
 </head>
 <body>
-    <div class="container">
-        <div class="center" style="margin-bottom: 22px;">
-            <img src="校徽.png" alt="上海第二工业大学校徽" class="logo" />
-        </div>
-
-        <div class="cover">
-            <img src="封面.jpg" alt="上海第二工业大学校园风景" class="cover-img" />
-            <p class="cover-caption">金海路校区 · 那些年，我们一起走过的路</p>
-        </div>
+    <div style="text-align: center; margin-bottom: 30px;">
+        <footer style="margin-top: 80px; text-align: center; color: #777; font-size: 0.9em;">
+    <img src="校徽.png" alt="上海第二工业大学校徽" style="width: 100px; height: auto; opacity: 0.8; margin-bottom: 10px;">
+            </footer>
 
         <h1>欢迎来到毕业留言分享站</h1>
         <p class="intro">
@@ -56,3 +60,4 @@
     </script>
 </body>
 </html>
+
