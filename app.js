@@ -1,8 +1,19 @@
 (() => {
-  // 后端 API 地址：
-  // - 本地联调：保持为空（自动用 http://localhost:8787）
-  // - 上线后：改成你的 Worker 域名，例如 https://grad-api.<你的subdomain>.workers.dev
-  const API_BASE = "https://grad-message-api.sspupgraduater.workers.dev";
+  // ===== Bmob 配置（已为你填好） =====
+  const BMOB = {
+    appId: "c9b5db9622cd76fa66d1aa41da9214f9",
+    apiKey: "7296a015d22fdb5acb6dc805d370a0b6",
+  };
+
+  const BMOB_BASE = "https://api.bmob.cn/1";
+
+  function bmobHeaders() {
+    return {
+      "X-Bmob-Application-Id": BMOB.appId,
+      "X-Bmob-REST-API-Key": BMOB.apiKey,
+      "Content-Type": "application/json",
+    };
+  }
 
   function safeTrim(v) {
     return String(v ?? "").trim();
@@ -22,56 +33,40 @@
     }
   }
 
-  function resolveApiBase() {
-    const base = safeTrim(API_BASE);
-    if (base) return base.replace(/\/+$/, "");
-    if (location.hostname === "localhost" || location.hostname === "127.0.0.1") {
-      return "http://localhost:8787";
-    }
-    // 线上没填 API_BASE 时给出明显错误
-    return "";
-  }
-
   async function loadMessagesOnline({ limit = 100 } = {}) {
-    const base = resolveApiBase();
-    if (!base) throw new Error("api_base_missing");
-    const url = `${base}/api/messages?limit=${encodeURIComponent(Math.min(200, Math.max(1, Number(limit) || 100)))}`;
-    const res = await fetch(url, { method: "GET" });
-    if (!res.ok) throw new Error("api_load_failed");
+    const url = `${BMOB_BASE}/classes/Message?order=-createdAt&limit=${encodeURIComponent(
+      Math.min(200, Math.max(1, Number(limit) || 100))
+    )}`;
+    const res = await fetch(url, {
+      method: "GET",
+      headers: bmobHeaders(),
+    });
+    if (!res.ok) throw new Error("bmob_load_failed");
     const data = await res.json();
-    const results = Array.isArray(data.messages) ? data.messages : [];
+    const results = Array.isArray(data.results) ? data.results : [];
     return results.map((r) => ({
-      id: safeTrim(r.id),
+      id: r.objectId || "",
       major: safeTrim(r.major),
       studentId: safeTrim(r.studentId),
       avatarUrl: safeTrim(r.avatarUrl),
       content: safeTrim(r.content),
-      createdAt: safeTrim(r.createdAt) || nowIso(),
+      createdAt: r.createdAt ? r.createdAt : nowIso(),
     }));
   }
 
   async function addMessageOnline({ major, studentId, content, avatarDataUrl }) {
-    const base = resolveApiBase();
-    if (!base) throw new Error("api_base_missing");
     const body = {
       major: safeTrim(major),
       studentId: safeTrim(studentId),
       content: safeTrim(content),
-      avatarDataUrl: safeTrim(avatarDataUrl),
+      avatarUrl: safeTrim(avatarDataUrl),
     };
-    const res = await fetch(`${base}/api/messages`, {
+    const res = await fetch(`${BMOB_BASE}/classes/Message`, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: bmobHeaders(),
       body: JSON.stringify(body),
     });
-    if (!res.ok) {
-      let msg = "提交失败";
-      try {
-        const j = await res.json();
-        if (j?.error) msg = String(j.error);
-      } catch {}
-      throw new Error(msg);
-    }
+    if (!res.ok) throw new Error("bmob_save_failed");
   }
 
   function defaultAvatarSvgDataUrl() {
@@ -157,11 +152,7 @@
       for (const msg of list) mount.appendChild(createCard(msg));
     } catch (e) {
       console.error(e);
-      const hint =
-        String(e?.message || "").includes("api_base_missing")
-          ? "未配置后端地址（API_BASE）。请按教程部署后端并填写 Worker 地址。"
-          : "请检查网络或后端服务是否正常，然后刷新重试。";
-      mount.innerHTML = `<div class="empty-state"><div class="empty-title">加载失败</div><div class="empty-sub">${hint}</div></div>`;
+      mount.innerHTML = `<div class="empty-state"><div class="empty-title">加载失败</div><div class="empty-sub">请检查 LeanCloud 配置或稍后刷新重试。</div></div>`;
     }
   }
 
@@ -185,11 +176,7 @@
       for (const msg of list) mount.appendChild(createCard(msg));
     } catch (e) {
       console.error(e);
-      const hint =
-        String(e?.message || "").includes("api_base_missing")
-          ? "未配置后端地址（API_BASE）。请按教程部署后端并填写 Worker 地址。"
-          : "请检查网络或后端服务是否正常，然后刷新重试。";
-      mount.innerHTML = `<div class="empty-state"><div class="empty-title">加载失败</div><div class="empty-sub">${hint}</div></div>`;
+      mount.innerHTML = `<div class="empty-state"><div class="empty-title">加载失败</div><div class="empty-sub">请检查 LeanCloud 配置或稍后刷新重试。</div></div>`;
     }
   }
 
@@ -289,7 +276,7 @@
         await addMessageOnline({ major, studentId, content, avatarDataUrl });
       } catch (e) {
         console.error(e);
-        alert(`提交失败：${e?.message || "请检查网络或后端服务"}`);
+        alert("提交失败：请检查网络或 Bmob 配置（Application ID / REST API Key），或者稍后重试。");
         return;
       } finally {
         submitBtn.disabled = false;
